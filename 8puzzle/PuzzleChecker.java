@@ -54,6 +54,11 @@ public class PuzzleChecker {
                 }
             }
             StdOut.println(filename + ": " + solver.moves());
+            if (solver.isSolvable()) {
+                for (Board b:solver.solution()) {
+                    StdOut.println(b.toString());
+                }
+            }
         }
     }
 }

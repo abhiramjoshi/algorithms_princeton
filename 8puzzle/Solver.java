@@ -55,35 +55,34 @@ public class Solver {
         }
     }
     
-    private MinPQ<Node> gameTree;
-    private MinPQ<Node> gameTreeTwin;
     private boolean solvable;
     private int movesToSolve;
     private String distanceFunc;
     private Node solvedNode;
 
     public Solver(Board initial) {
-        distanceFunc = null;
+        this.distanceFunc = null;
         if (initial == null) {
             throw new IllegalArgumentException();
         }
-        movesToSolve = -1;
-        Node solvedNode = null;
+        this.movesToSolve = -1;
+        this.solvedNode = null;
         Board initialTwin = initial.twin();
         Node initialNode = new Node(-1, initial, null, this.distanceFunc);
         Node initialNodeTwin = new Node(-1, initialTwin, null, this.distanceFunc);
-        gameTree = new MinPQ<>(new NodeComparator());
+        
+        MinPQ<Node> gameTree = new MinPQ<>(new NodeComparator());
         gameTree.insert(initialNode); 
-        gameTreeTwin = new MinPQ<>(new NodeComparator());
+        MinPQ<Node> gameTreeTwin = new MinPQ<>(new NodeComparator());
         gameTreeTwin.insert(initialNodeTwin); 
         
         while (!gameTree.isEmpty()) {
             Node currNode = gameTree.delMin();
             
             if (currNode.board.isGoal()) {
-                solvable = true;
-                solvedNode = currNode;
-                this.movesToSolve = solvedNode.movesMade;
+                this.solvable = true;
+                this.solvedNode = currNode;
+                this.movesToSolve = this.solvedNode.movesMade;
                 break;
             } else {
                 addNeighbours(currNode, gameTree);
@@ -91,8 +90,8 @@ public class Solver {
 
             Node currNodeTwin = gameTreeTwin.delMin();
             if (currNodeTwin.board.isGoal()) {
-                solvable = false;
-                solvedNode = null; 
+                this.solvable = false;
+                this.solvedNode = null; 
                 break;
             } else {
                 addNeighbours(currNodeTwin, gameTreeTwin);
@@ -132,10 +131,10 @@ public class Solver {
             return null;
         }
         ArrayList<Board> solutionBranch = new ArrayList<>();
-        while (this.solvedNode != null) {
-            solutionBranch.add(0, this.solvedNode.board);
-            this.solvedNode = this.solvedNode.prevBoard;
-            movesToSolve++;
+        Node lastNode = this.solvedNode;
+        while (lastNode != null) {
+            solutionBranch.add(0, lastNode.board);
+            lastNode = lastNode.prevBoard;
         }
         return solutionBranch;
     }

@@ -1,20 +1,24 @@
 import java.util.ArrayList;
 
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdRandom;
 
 public class Board {
-    private int[][] board;
-    private int n;
-    private int posBlank;
+    final private int[][] board;
+    final private int n;
+    final private int posBlank;
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         if (tiles == null || tiles.length == 0 || tiles.length != tiles[0].length) {
             throw new IllegalArgumentException("Input array must be a square 2D array.");
         }
-        board = tiles;
         n = tiles.length;
+        board = new int[n][n];
+        for (int i = 0; i<n; i++) {
+            for (int j = 0; j<n;j++) {
+                board[i][j] = tiles[i][j];
+            }
+        }
         posBlank = findBlank();
     }
                                            
@@ -104,14 +108,22 @@ public class Board {
     public boolean equals(Object y) {
         if (y == this) return true;
         if (y == null) return false;
+        if (y.getClass() != this.getClass()) return false;
         int n_2 = this.n*this.n;
         Board y_board = (Board) y;
-        for (int i = 0; i < n_2; i++) {
-            int row = i / this.n;
-            int col = i % this.n;
-            if (this.board[row][col] != y_board.board[row][col]){
-                return false;
+        if (y_board.dimension() != this.dimension()) {
+            return false;
+        }
+        try {
+            for (int i = 0; i < n_2; i++) {
+                int row = i / this.n;
+                int col = i % this.n;
+                if (this.board[row][col] != y_board.board[row][col]){
+                    return false;
+                }
             }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return false;
         }
         return true;
     }
@@ -156,18 +168,15 @@ public class Board {
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
         int[][] twinBoard = copyBoard(board);
-        int randRowOne = StdRandom.uniformInt(this.n*this.n) / n;
-        int randColOne = StdRandom.uniformInt(this.n*this.n) % n;
-        while ( (posBlank/n == randRowOne) && (posBlank%n == randColOne)) {
-            randRowOne = StdRandom.uniformInt(this.n*this.n) / n;
-            randColOne = StdRandom.uniformInt(this.n*this.n) % n;
+        int i = 0;
+        while ( i == this.posBlank || i+1 == this.posBlank) {
+
+            i += 2;
         }
-        int randRowTwo = StdRandom.uniformInt(this.n*this.n) / n;
-        int randColTwo = StdRandom.uniformInt(this.n*this.n) % n;
-        while ( ((randRowOne == randRowTwo) && (randColOne == randColTwo)) || ((posBlank/n == randRowTwo) && (posBlank%n == randColTwo))) {
-            randRowTwo = StdRandom.uniformInt(this.n*this.n) / n;
-            randColTwo = StdRandom.uniformInt(this.n*this.n) % n;
-        }
+        int randRowOne = i / n;
+        int randColOne = i % n;
+        int randRowTwo = (i+1) / n;
+        int randColTwo = (i+1) % n;
         swap(twinBoard, randRowOne, randColOne, randRowTwo, randColTwo);
         return new Board(twinBoard);
     }
