@@ -11,33 +11,35 @@ public class Solver {
         Board board;
         Node prevBoard;
 
-        public Node (int prevMoves, Board nodeBoard, Node prevBoard, String distanceFunc){
+        public Node(int prevMoves, Board nodeBoard, Node prevBoard, String distanceFunc) {
             this.board = nodeBoard;
             this.prevBoard = prevBoard;
-            this.movesMade = prevMoves+1;
+            this.movesMade = prevMoves + 1;
             this.distance = calcDistance(distanceFunc);
             this.priority = movesMade + distance;
         }
 
         private int calcDistance(String distanceFunc) {
             if (this.prevBoard == null) {
-                if (distanceFunc == "hamming") {
+                if (distanceFunc.equals("hamming")) {
                     return board.hamming();
                 } else {
                     return board.manhattan();
                 }
             }
-            if (distanceFunc == "hamming") {
+            if (distanceFunc.equals("hamming")) {
                 return intermediateHamming();
             }
             return intermediateManhattan();
         }
 
         private int intermediateManhattan() {
+            // Where we would run an optimized Manhattan distance func
             return board.manhattan();
         }
 
         private int intermediateHamming() {
+            // Where we would run an optimized Hamming distance func
             return board.hamming();
         }
 
@@ -54,14 +56,14 @@ public class Solver {
             return 0;
         }
     }
-    
+
     private boolean solvable;
     private int movesToSolve;
     private String distanceFunc;
     private Node solvedNode;
 
     public Solver(Board initial) {
-        this.distanceFunc = null;
+        this.distanceFunc = "manhattan";
         if (initial == null) {
             throw new IllegalArgumentException();
         }
@@ -70,15 +72,15 @@ public class Solver {
         Board initialTwin = initial.twin();
         Node initialNode = new Node(-1, initial, null, this.distanceFunc);
         Node initialNodeTwin = new Node(-1, initialTwin, null, this.distanceFunc);
-        
+
         MinPQ<Node> gameTree = new MinPQ<>(new NodeComparator());
-        gameTree.insert(initialNode); 
+        gameTree.insert(initialNode);
         MinPQ<Node> gameTreeTwin = new MinPQ<>(new NodeComparator());
-        gameTreeTwin.insert(initialNodeTwin); 
-        
+        gameTreeTwin.insert(initialNodeTwin);
+
         while (!gameTree.isEmpty()) {
             Node currNode = gameTree.delMin();
-            
+
             if (currNode.board.isGoal()) {
                 this.solvable = true;
                 this.solvedNode = currNode;
@@ -91,29 +93,27 @@ public class Solver {
             Node currNodeTwin = gameTreeTwin.delMin();
             if (currNodeTwin.board.isGoal()) {
                 this.solvable = false;
-                this.solvedNode = null; 
+                this.solvedNode = null;
                 break;
             } else {
                 addNeighbours(currNodeTwin, gameTreeTwin);
-            }      
+            }
         }
     }
 
     private void addNeighbours(Node currNode, MinPQ<Node> tree) {
         Iterable<Board> neighbourBoards = currNode.board.neighbors();
-        for (Board b: neighbourBoards) {
+        for (Board b : neighbourBoards) {
             if (currNode.prevBoard == null) {
-                ;
-            }
-            else if (currNode.prevBoard.board.equals(b)) {
+                ; //pass
+            } else if (currNode.prevBoard.board.equals(b)) {
                 continue;
             }
             Node neighbourNode = new Node(
-                currNode.movesMade, 
-                b, 
-                currNode, 
-                this.distanceFunc
-            );
+                    currNode.movesMade,
+                    b,
+                    currNode,
+                    this.distanceFunc);
             tree.insert(neighbourNode);
         }
     }
@@ -138,5 +138,4 @@ public class Solver {
         }
         return solutionBranch;
     }
-    
 }
